@@ -2,10 +2,9 @@ import os
 import json
 import collections
 import resource
-from unittest import result
 import pandas as pd 
 from pandas.io.json import json_normalize
-
+from unittest import result
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 
@@ -22,16 +21,12 @@ class LongPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IResourceView)
     plugins.implements(plugins.ITemplateHelpers)
-    # IConfigurer
-
-
+    
 
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'public')
         toolkit.add_resource('fanstatic', 'long')
-
-        
 
         
     def get_helpers(self):
@@ -59,13 +54,13 @@ class LongPlugin(plugins.SingletonPlugin):
     
     def can_view(self, data_dict):
         return True
-
+    
     def view_template(self, context, data_dict):
         return 'long_view.html'
 
     def form_template(self, context, data_dict):
         return 'long_form.html'
-        
+    
     def setup_template_variables(self, context, data_dict):
         resource = data_dict['resource']
         fields = _get_fields_without_id(resource)
@@ -84,12 +79,14 @@ class LongPlugin(plugins.SingletonPlugin):
                 'allFields': fields
                 }       
 
+
     def _fields_as_string(self, resource_view):
         fields = resource_view.get('fields')
 
         if fields:
             resource_view['fields'] = convert_to_string(fields)
-    
+            
+            
 def _view_data_long(resource_view):
     data = {
         'resource_id': resource_view['resource_id'],
@@ -97,18 +94,17 @@ def _view_data_long(resource_view):
     }
 
 
-    filters = resource_view.get('filters', {})
-    for key, value in parse_filter_params().items():
-        filters[key] = value
-    data['filters'] = filters
-
     fields = resource_view.get('fields')
     varList = resource_view.get('varList')
+    valueName = resource_view.get('valueName')
+    varName = resource_view.get('varName')
+    
+    
     idVarsList = []
     valueVarsList = []
 
 
-    result = plugins.toolkit.get_action('datastore_search')({}, data)
+    datastore_search = plugins.toolkit.get_action('datastore_search')({}, data)
 
 
     if fields:
@@ -117,27 +113,21 @@ def _view_data_long(resource_view):
     if varList:
         valueVarsList = convert_to_string(varList).split(',')
     else:
-        valueVarsList = get_fields_from_json(result['fields'], idVarsList)
-
-
-    test = json_normalize(result['records'])
-    valueName = resource_view.get('valueName')
+        valueVarsList = get_fields_from_json(datastore_search['fields'], idVarsList)
+        
     if valueName == '':
         valueName = 'New Value'
-    varName = resource_view.get('varName')
+
     if varName == '':
         varName = 'New Variable'
 
-    long_table = test.melt(id_vars = idVarsList,
+    wide_table = json_normalize(datastore_search['records'])
+    long_table = wide_table.melt(id_vars = idVarsList,
     				     value_vars = valueVarsList,
     				     var_name = varName, value_name = valueName)
     long_json = long_table.to_json(orient = "split")
-    parsed = json.loads(long_json)
-    result['records'] = long_json
-    return parsed
-    
-    
-    
+    result = json.loads(long_json)
+    return result
     
     
 def parse_filter_params():
@@ -149,7 +139,6 @@ def parse_filter_params():
         key, value = filter.split(':')
         filters[key].append(value)
     return dict(filters)
-
 
 def convert_to_string(value):
     if isinstance(value, list):
