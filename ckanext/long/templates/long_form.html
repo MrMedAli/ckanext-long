@@ -1,0 +1,59 @@
+{% import 'macros/form.html' as form %}
+
+
+
+<script src="https://code.jquery.com/jquery-3.4.0.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+<div style="margin: auto;">
+
+    <p>
+        <label class="control-label"> Constant Columns </label>
+    </p>
+    <p>
+        <select class="js-example-responsive" name="fields" id="field-fields" {% if data.fields %} data-placeholder={{
+            data.fields }} {% endif %} multiple="multiple" style="width: 100%">
+            {% for option in allFields %}
+            <option value="{{ option.value }}">{{ option.value }}</option>
+            {% endfor %}
+        </select>
+    </p>
+
+
+    <p>
+        <label class="control-label"> Variable Columns </label>
+    </p>
+    <p>
+        <select class="js-example-responsive" name="varList" id="varList-fields" {% if data.varList %}
+            data-placeholder={{ data.varList }} {% endif %} multiple="multiple" style="width: 100%">
+            {% for option in allFields %}
+            <option value="{{ option.value }}">{{ option.value }}</option>
+            {% endfor %}
+        </select>
+    </p>
+
+    {{
+    form.input('varName', 'varName-field', label=_('New Variable Name'), value=data.varName)
+    }}
+
+    {{
+    form.input('valueName', 'valueName-field', label=_('New Value Name'), value=data.valueName)
+    }}
+</div>
+
+<script>
+    $(document).ready(
+        function () {
+            $("#field-fields").select2({
+                width: 'resolve' // need to override the changed default
+            });
+
+            $("#varList-fields").select2({
+                width: 'resolve' // need to override the changed default
+            });
+
+        }
+    );
+
+</script>

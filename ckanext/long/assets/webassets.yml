@@ -1,0 +1,15 @@
+# long-js:
+#   filter: rjsmin
+#   output: ckanext-long/%(version)s-long.js
+#   contents:
+#     - js/long.js
+#   extra:
+#     preload:
+#       - base/main
+
+# long-css:
+#   filter: cssrewrite
+#   output: ckanext-long/%(version)s-long.css
+#   contents:
+#     - css/long.css
+
